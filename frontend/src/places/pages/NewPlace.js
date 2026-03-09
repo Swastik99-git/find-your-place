@@ -6,18 +6,23 @@ import Button from "../../shared/components/FormElements/Button";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import ImageUpload from "../../shared/components/FormElements/ImageUpload";
+
 import {
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH,
 } from "../../shared/util/validators";
+
 import { useForm } from "../../shared/hooks/form-hook";
 import { useHttpClient } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
+
 import "./PlaceForm.css";
 
 const NewPlace = () => {
   const auth = useContext(AuthContext);
+
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
+
   const [formState, inputHandler] = useForm(
     {
       title: {
@@ -28,40 +33,33 @@ const NewPlace = () => {
         value: "",
         isValid: false,
       },
-      // address: {
-      //   value: "",
-      //   isValid: false,
-      // },
       image: {
         value: null,
         isValid: false,
       },
     },
-    false
+    false,
   );
 
   const history = useHistory();
 
   const placeSubmitHandler = async (event) => {
     event.preventDefault();
+
     try {
-      // const formData = new FormData();
-      // formData.append("creator", auth.userId);
-      // formData.append("title", formState.inputs.title.value);
-      // formData.append("description", formState.inputs.description.value);
-      // // formData.append("address", formState.inputs.address.value);
-      // formData.append("image", formState.inputs.image.value);
-      await sendRequest(
-        `http://localhost:5000/api/places`,
-        "POST",
-        JSON.stringify({
-          creator: auth.userId,
-          title: formState.inputs.title.value,
-          description: formState.inputs.description.value,
-          image: formState.inputs.image.value,
-        }),
-        { "Content-Type": "application/json" }
+      const formData = new FormData();
+
+      formData.append("creator", auth.userId);
+      formData.append("title", formState.inputs.title.value);
+      formData.append("description", formState.inputs.description.value);
+      formData.append(
+        "image",
+        formState.inputs.image.value,
+        formState.inputs.image.value.name,
       );
+
+      await sendRequest("http://localhost:5000/api/places", "POST", formData);
+
       history.push("/");
     } catch (err) {}
   };
@@ -69,9 +67,12 @@ const NewPlace = () => {
   return (
     <React.Fragment>
       <ErrorModal error={error} onClear={clearError} />
+
       <form className="place-form" onSubmit={placeSubmitHandler}>
         <h2>ADD A PLACE</h2>
+
         {isLoading && <LoadingSpinner asOverlay />}
+
         <Input
           id="title"
           element="input"
@@ -81,6 +82,7 @@ const NewPlace = () => {
           errorText="Please enter a valid title."
           onInput={inputHandler}
         />
+
         <Input
           id="description"
           element="textarea"
@@ -89,20 +91,16 @@ const NewPlace = () => {
           errorText="Please enter a valid description (at least 5 characters)."
           onInput={inputHandler}
         />
-        {/* <Input
-          id="address"
-          element="input"
-          label="Address"
-          validators={[VALIDATOR_REQUIRE()]}
-          errorText="Please enter a valid address."
-          onInput={inputHandler}
-        /> */}
+
         <ImageUpload
           id="image"
           onInput={inputHandler}
           errorText="Please provide an image."
         />
-        <Button type="submit">ADD PLACE</Button>
+
+        <Button type="submit" disabled={!formState.isValid}>
+          ADD PLACE
+        </Button>
       </form>
     </React.Fragment>
   );

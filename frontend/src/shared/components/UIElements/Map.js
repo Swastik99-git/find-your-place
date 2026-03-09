@@ -1,28 +1,48 @@
-// import React, { useRef, useEffect } from 'react';
-// // import React from 'react';
-// import './Map.css';
+import { useEffect, useRef } from "react";
+import L from "leaflet";
 
-// const Map = props => {
-//   const mapRef = useRef();
-  
-//   const { center, zoom } = props;
+import "leaflet/dist/leaflet.css";
 
-//   useEffect(() => {
-//     const map = new window.google.maps.Map(mapRef.current, {
-//       center: center,
-//       zoom: zoom
-//     });
-  
-//     new window.google.maps.Marker({ position: center, map: map });
-//   }, [center, zoom]);  
+const Map = (props) => {
 
-//   return (
-//     <div
-//       ref={mapRef}
-//       className={`map ${props.className}`}
-//       style={props.style}
-//     ></div>
-//   );
-// };
+  const mapRef = useRef();
+  const mapInstance = useRef(null);
 
-// export default Map;
+  useEffect(() => {
+
+    if (!mapInstance.current) {
+
+      mapInstance.current = L.map(mapRef.current).setView(
+        [props.center.lat, props.center.lng],
+        props.zoom
+      );
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(mapInstance.current);
+
+      L.marker([props.center.lat, props.center.lng]).addTo(mapInstance.current);
+
+    }
+
+    return () => {
+
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
+
+    };
+
+  }, [props.center, props.zoom]);
+
+  return (
+    <div
+      ref={mapRef}
+      style={{ height: "100%", width: "100%" }}
+    />
+  );
+
+};
+
+export default Map;

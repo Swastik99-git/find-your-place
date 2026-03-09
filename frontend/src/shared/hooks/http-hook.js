@@ -9,6 +9,7 @@ export const useHttpClient = () => {
   const sendRequest = useCallback(
     async (url, method = "GET", body = null, headers = {}) => {
       setIsLoading(true);
+
       const httpAbortCtrl = new AbortController();
       activeHttpRequests.current.push(httpAbortCtrl);
 
@@ -17,13 +18,13 @@ export const useHttpClient = () => {
           method,
           body,
           headers,
-          signal: httpAbortCtrl.signal,
+          signal: httpAbortCtrl.signal
         });
 
         const responseData = await response.json();
 
         activeHttpRequests.current = activeHttpRequests.current.filter(
-          (reqCtrl) => reqCtrl !== httpAbortCtrl
+          reqCtrl => reqCtrl !== httpAbortCtrl
         );
 
         if (!response.ok) {
@@ -32,8 +33,15 @@ export const useHttpClient = () => {
 
         setIsLoading(false);
         return responseData;
+
       } catch (err) {
-        setError(err.message);
+
+        // Abort error ignore
+        if (err.name === "AbortError") {
+          return;
+        }
+
+        setError(err.message || "Something went wrong!");
         setIsLoading(false);
         throw err;
       }
@@ -47,7 +55,7 @@ export const useHttpClient = () => {
 
   useEffect(() => {
     return () => {
-      activeHttpRequests.current.forEach((abortCtrl) => abortCtrl.abort);
+      activeHttpRequests.current.forEach(abortCtrl => abortCtrl.abort());
     };
   }, []);
 

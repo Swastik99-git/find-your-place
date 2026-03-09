@@ -49,9 +49,8 @@
 }
 
 .map-container {
-  height: 15rem;
+  height: 300px;
   width: 100%;
-  background-color: red;
 }
 
 @media (min-width: 768px) {
