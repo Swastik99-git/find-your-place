@@ -1,0 +1,8 @@
+{
+  "name": "find-your-place",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "node backend/app.js"
+  }
+}
